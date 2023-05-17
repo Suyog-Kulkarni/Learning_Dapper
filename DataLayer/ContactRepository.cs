@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Dapper;
+using System.Data;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 
@@ -12,7 +13,11 @@ public class ContactRepository : IContactRepository
 
     public Contact Add(Contact contact)
     {
-        throw new NotImplementedException();
+        var sql = "Insert into Contacts (FirstName, LastName, Email, Company, Title) Values (@FirstName, @LastName, @Email, @Company, @Title); " +
+            "Select Cast(SCOPE_IDENTITY() as int)";
+        var id = _db.Query<int>(sql,contact).Single();
+        contact.Id = id;
+        return contact;
 
     }
 
@@ -23,12 +28,13 @@ public class ContactRepository : IContactRepository
 
     public Contact Find(int id)
     {
-        throw new NotImplementedException();
+       return _db.Query<Contact>("Select * from Contacts where Id = @id", new {id}).SingleOrDefault();
     }
 
     public List<Contact> GetAll()
     {
-        throw new NotImplementedException();
+        return _db.Query<Contact>("Select * from Contacts").ToList();
+        // this returns  
     }
 
     public Contact Update(Contact contact)
